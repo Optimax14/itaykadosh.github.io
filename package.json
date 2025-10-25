@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "vite build && node scripts/copy-404.js && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "preview": "vite preview --host",
     "check": "tsc --noEmit",
@@ -94,9 +94,7 @@
   "overrides": {
     "tailwindcss": {
       "nanoid": "3.3.7"
-    },
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
+    }
   },
   "packageManager": "npm@10.9.0",
   "pnpm": {
