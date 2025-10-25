@@ -1,36 +1,98 @@
 name: Deploy Vite site to GitHub Pages
+
 on:
-  push: { branches: [main] }
+  push:
+    branches:
+      - main
   workflow_dispatch:
-permissions: { contents: read, pages: write, id-token: write }
-concurrency: { group: pages, cancel-in-progress: true }
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with: { version: 10 }
+      - name: Detect Vite app directory
+        id: detect
+        run: |
+          set -euo pipefail
 
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: pnpm }
+          if [[ -f "package.json" ]] && compgen -G "vite.config.*" > /dev/null; then
+            app_dir="."
+            out_dir="dist"
+          elif [[ -f "client/package.json" ]] && compgen -G "client/vite.config.*" > /dev/null; then
+            app_dir="client"
+            out_dir="client/dist"
+          else
+            echo "Unable to locate a Vite app directory." >&2
+            exit 1
+          fi
 
-      - name: Install
+          if [[ "$app_dir" == "." ]]; then
+            lockfile="pnpm-lock.yaml"
+          else
+            lockfile="$app_dir/pnpm-lock.yaml"
+          fi
+
+          {
+            echo "app-dir=$app_dir"
+            echo "out-dir=$out_dir"
+            echo "lockfile=$lockfile"
+          } >>"$GITHUB_OUTPUT"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: ${{ steps.detect.outputs.lockfile }}
+
+      - name: Install dependencies
+        working-directory: ${{ steps.detect.outputs.app-dir }}
         run: pnpm install --frozen-lockfile=false
 
-      - name: Build
+      - name: Build site
+        working-directory: ${{ steps.detect.outputs.app-dir }}
         run: pnpm build
 
-      # SPA fallback so /about etc. work on refresh
-      - name: SPA fallback
-        run: cp dist/index.html dist/404.html
+      - name: Create SPA fallback
+        id: spa
+        run: |
+          set -euo pipefail
+
+          out_dir="${{ steps.detect.outputs.out-dir }}"
+
+          if [[ ! -f "$out_dir/index.html" ]] && [[ -f "$out_dir/public/index.html" ]]; then
+            out_dir="$out_dir/public"
+          fi
+
+          if [[ ! -f "$out_dir/index.html" ]]; then
+            echo "index.html not found in '$out_dir'" >&2
+            exit 1
+          fi
+
+          cp "$out_dir/index.html" "$out_dir/404.html"
+          echo "artifact-path=$out_dir" >>"$GITHUB_OUTPUT"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./${{ steps.spa.outputs.artifact-path }}
 
   deploy:
     needs: build
@@ -38,6 +100,8 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
