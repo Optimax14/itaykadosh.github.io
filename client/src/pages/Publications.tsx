@@ -87,6 +87,8 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
     );
   }
 
+  const base = import.meta.env.BASE_URL || "/";
+
   return (
     <div className="space-y-4">
       <div className="relative w-full bg-muted rounded-lg overflow-hidden border border-border shadow-sm aspect-video group">
@@ -130,33 +132,35 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
                 transition: 'all 500ms ease-in-out'
               }}
             >
-              {item.type === "image" && (
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  className="w-full h-full object-cover"
-                />
-              )}
-              {item.type === "gif" && (
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  className="w-full h-full object-cover"
-                />
-              )}
-              {item.type === "video" && (
-                <video
-                  ref={(el: HTMLVideoElement | null) => {
-                    if (el) videoRefs.current[index] = el;
-                  }}
-                  src={item.src}
-                  className="w-full h-full object-cover"
-                  playsInline
-                  muted
-                  loop
-                  preload="auto"
-                />
-              )}
+              {(() => {
+                const srcUrl = item.src?.startsWith("/") ? base + item.src.slice(1) : item.src;
+                if (item.type === "image" || item.type === "gif") {
+                  return (
+                    <img
+                      src={srcUrl}
+                      alt={item.alt}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  );
+                }
+                if (item.type === "video") {
+                  return (
+                    <video
+                      ref={(el: HTMLVideoElement | null) => {
+                        if (el) videoRefs.current[index] = el;
+                      }}
+                      src={index === currentIndex ? srcUrl : undefined}
+                      className="w-full h-full object-cover"
+                      playsInline
+                      muted
+                      loop
+                      preload="metadata"
+                    />
+                  );
+                }
+                return null;
+              })()}
             </div>
           ))}
         </div>

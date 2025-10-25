@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 
@@ -158,52 +159,89 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
   );
 }
 
+function RoboticsIdle() {
+  return (
+    <motion.svg
+      width="140"
+      height="140"
+      viewBox="0 0 140 140"
+      className="absolute -top-6 -left-6 opacity-40 text-foreground/40 pointer-events-none"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, ease: "easeOut" }}
+    >
+      <defs>
+        <linearGradient id="scan" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.6" />
+        </linearGradient>
+      </defs>
+      <g transform="translate(70,70)">
+        <motion.g
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 18, ease: "linear" }}
+        >
+          <path d="M0 -58 A58 58 0 0 1 50 -29" stroke="url(#scan)" strokeWidth="2" fill="none" />
+          <path d="M0 -42 A42 42 0 0 1 36 -21" stroke="url(#scan)" strokeWidth="2" fill="none" />
+          <path d="M0 -26 A26 26 0 0 1 22 -12" stroke="url(#scan)" strokeWidth="2" fill="none" />
+          <motion.circle
+            r="3"
+            cx="50"
+            cy="-29"
+            fill="currentColor"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
+          />
+        </motion.g>
+      </g>
+    </motion.svg>
+  );
+}
+
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section with Photo */}
       <section className="section-padding">
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <motion.div
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
             {/* Left: Photo */}
-            <div className="flex justify-center lg:justify-end animate-scaleIn">
+            <div className="relative flex justify-center lg:justify-end">
               <div className="w-full max-w-md aspect-square bg-muted rounded-lg overflow-hidden border border-border shadow-sm hover:scale-[1.02] transition-transform duration-300">
                 <img
-                  src="/about-photo-1.jpg"
+                  src={import.meta.env.BASE_URL + "about-photo-1.jpg"}
                   alt="Itay Kadosh"
                   className="w-full h-full object-cover"
                 />
               </div>
+              <RoboticsIdle />
             </div>
 
             {/* Right: Text Content */}
             <div className="space-y-6">
-              <div className="animate-fadeInUp" style={{ animationDelay: '200ms' }}>
-                <h1 className="text-5xl sm:text-6xl font-bold mb-4">
-                  Itay Kadosh
-                </h1>
-                <p className="text-2xl text-muted-foreground font-light">
-                  Robotics Researcher & Graduate School Applicant
-                </p>
-              </div>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.45 }}>
+                <h1 className="text-5xl sm:text-6xl font-bold mb-4">Itay Kadosh</h1>
+                <p className="text-2xl text-muted-foreground font-light">Robotics Researcher & Graduate School Applicant</p>
+              </motion.div>
 
-              <div className="animate-fadeInUp" style={{ animationDelay: '400ms' }}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.45 }}>
                 <p className="text-lg text-foreground leading-relaxed">
-                  Passionate about advancing robotics through research and innovation.
-                  Exploring autonomous systems, manipulation, and human-robot interaction.
+                  Passionate about advancing robotics through research and innovation. Exploring autonomous systems, manipulation, and human-robot interaction.
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="animate-fadeInUp" style={{ animationDelay: '600ms' }}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.45 }}>
                 <p className="text-lg text-foreground leading-relaxed">
-                  Welcome to my portfolio. Here you'll find information about my research,
-                  publications, professional experience, and academic background. I'm actively
-                  seeking opportunities to pursue graduate studies in robotics and contribute
-                  to cutting-edge research in the field.
+                  Welcome to my portfolio. Here you'll find my research, publications, experience, and academic background. I'm seeking opportunities to pursue graduate studies in robotics and contribute to cutting-edge work.
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="flex flex-wrap gap-4 pt-4 animate-fadeInUp" style={{ animationDelay: '800ms' }}>
+              <motion.div className="flex flex-wrap gap-4 pt-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.45 }}>
                 <Link href="/about">
                   <Button variant="default" className="bg-foreground text-background hover:bg-muted-foreground transform hover:scale-105 transition-all duration-300">
                     Learn More About Me
@@ -214,9 +252,9 @@ export default function Home() {
                     View My Work
                   </Button>
                 </Link>
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -322,4 +360,3 @@ export default function Home() {
     </div>
   );
 }
-
