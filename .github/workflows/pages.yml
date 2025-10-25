@@ -52,6 +52,32 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+
+          if [[ -f "package.json" ]] && compgen -G "vite.config.*" > /dev/null; then
+            app_dir="."
+            out_dir="dist"
+          elif [[ -f "client/package.json" ]] && compgen -G "client/vite.config.*" > /dev/null; then
+            app_dir="client"
+            out_dir="client/dist"
+          else
+            echo "Unable to locate a Vite app directory." >&2
+            exit 1
+          fi
+
+          if [[ "$app_dir" == "." ]]; then
+            lockfile="pnpm-lock.yaml"
+          else
+            lockfile="$app_dir/pnpm-lock.yaml"
+          fi
+
+          {
+            echo "app-dir=$app_dir"
+            echo "out-dir=$out_dir"
+            echo "lockfile=$lockfile"
+          } >>"$GITHUB_OUTPUT"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 10
 
