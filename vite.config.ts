@@ -8,18 +8,20 @@ import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 const plugins = [react(), tailwindcss(), vitePluginManusRuntime()];
 
 function computeBase() {
-  // If explicit override is set, honor it
+  // 1) Honor explicit override
   if (process.env.VITE_BASE) return process.env.VITE_BASE;
 
-  // In GitHub Actions, derive base from repository name
-  const repo = process.env.GITHUB_REPOSITORY;
+  // 2) Derive from GitHub repo context (Actions)
+  const repo = process.env.GITHUB_REPOSITORY; // e.g. owner/name
   if (repo) {
-    const name = repo.split("/")[1] ?? "";
-    // For user/organization pages (repo ends with .github.io), base must be '/'
-    if (name.endsWith(".github.io")) return "/";
-    // For project pages, base is '/<repo>/'
-    if (name) return `/${name}/`;
+    const [owner, name] = repo.split("/");
+    if (owner && name) {
+      const isUserSite = name.toLowerCase() === `${owner.toLowerCase()}.github.io`;
+      return isUserSite ? "/" : `/${name}/`;
+    }
   }
+
+  // 3) Default for local dev
   return "/";
 }
 
